@@ -1,0 +1,19 @@
+VariableName,VariableValue,Comments,Priority
+vG.InventoryTurns,,Inventory Turns = Sales / Average Inventory [This KPI tells us how often the average inventory over a given period of time (usally a year) is sold in that same period of time.,Inventory Turns
+vG.Sellthrough,,Sell-through % =units sold / BOM (beginning of month) inventory Is a percentage of units sold during a period and it is calculated by dividing the number of units sold by the beginning on-hand inventory (for that same time period).,Sell-through
+vG.InventoryDaysOfSupply,,Inventory Days of Supply = Average Inventory / Cost of a Day’s Sales    Example: $20/ $0.5 = 40 days supply,InventoryDaysOfSupply
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,
+,,,

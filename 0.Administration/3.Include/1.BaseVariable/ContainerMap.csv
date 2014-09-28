@@ -1,0 +1,8 @@
+﻿ContainerPathName,ContainerFolderName,ContainerComments,RootPath
+Admin,0.Administration,Default Administration Container,
+Shared,99.Shared_Folders,Container for Shared resources,
+App,1.App,,
+Trans,2.Transformation,,
+Src,3.Source,,
+,,,
+,,,

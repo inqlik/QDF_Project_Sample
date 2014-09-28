@@ -1,0 +1,19 @@
+﻿// Include and load QVS script corresponding to QVW file
+// vL.ScriptDir  
+
+	call LoadContainerGlobalVariables('Src','QVD');
+  call LoadContainerGlobalVariables('App','QVD');
+
+	LET vLoadStartTime = now();
+	LET vScriptStartTime = replace(Num(now()),',','_');
+
+	LET include_file = '$(vG.CustomPath)' & Upper(replace(DocumentName(), '.qvw', '.qvs'));
+
+	$(must_include=$(vG.SubPath)InQlik.qvs);
+
+	$(must_include=$(include_file));
+	
+	LET include_file=;
+	$(include=$(vG.LocalePath)\8.Rus.qvs);
+	vL.ScriptDir = Null();
+

@@ -1,0 +1,33 @@
+﻿//#!..\..\1.Application\
+
+// Connection to Northwind Access Database stored in 8.Import directory Variable $(vG.ImportPath) 
+
+OLEDB CONNECT32 TO [Provider=Microsoft.Jet.OLEDB.4.0;User ID=Admin;Data Source='$(vG.ImportPath)Northwind.mdb';Mode=Read;Extended Properties="";Jet OLEDB:System database="";Jet OLEDB:Registry Path="";Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;Jet OLEDB:Database Locking Mode=0;Jet OLEDB:Global Partial Bulk Ops=2;Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;Jet OLEDB:Don't Copy Locale on Compact=False;Jet OLEDB:Compact Without Replica Repair=False;Jet OLEDB:SFP=False];
+
+Products:
+SQL SELECT *
+FROM Products;
+
+STORE Products INTO '$(vG.QVDPath)Products.qvd' (QVD);
+DROP TABLE Products;
+
+Customers:
+SQL SELECT *
+FROM Customers;
+
+STORE Customers INTO '$(vG.QVDPath)Customers.qvd' (QVD);
+DROP TABLE Customers;
+
+Orders:
+SQL SELECT *
+FROM Orders;
+
+STORE Orders INTO '$(vG.QVDPath)Orders.qvd' (QVD);
+DROP TABLE Orders;
+
+OrderDetails:
+SQL SELECT *
+FROM [Order Details];
+
+STORE OrderDetails INTO '$(vG.QVDPath)OrderDetails.qvd' (QVD);
+DROP TABLE OrderDetails;

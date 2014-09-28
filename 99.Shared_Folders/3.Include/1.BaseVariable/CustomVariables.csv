@@ -1,0 +1,4 @@
+VariableName,VariableValue,Comments,Priority
+LET vU.CurrentDate,"Num(MakeDate(2014,9,15))",,
+LET vU.StartDate,"Num(MakeDate(2013,1))",,
+LET vU.EndDate,Num(DayStart(MonthEnd(vU.CurrentDate))),,

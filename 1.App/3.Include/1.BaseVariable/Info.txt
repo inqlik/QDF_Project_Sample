@@ -1,0 +1,11 @@
+//  ____________________________________________________________
+// |      Deployment Framework Path Info txt                   |
+// | Contains information folder purpose and base variable     |
+// |  All path are based on vG.BasePath                        |
+// |___________________________________________________________|
+
+// vG.BaseVariable points to 1.BaseVariable folder
+// This folder contains BaseVariable Include scripts to put in qvw first script tab.
+// the first Include should always be 1.Init.qvs
+
+Global Search Path Variable = $(vG.BaseVariablePath)

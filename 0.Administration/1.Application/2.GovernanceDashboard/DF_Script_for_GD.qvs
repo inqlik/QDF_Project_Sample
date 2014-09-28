@@ -1,0 +1,120 @@
+﻿trace  '## Start Loading Deployment Framework';
+
+// Reseting vG.BasePath variable
+let vG.BasePath=;
+IF '$(vG.BasePath)'= '' then 
+SET vL.Path_tmp = ; 
+for vL.x =1 to 10-1 
+LET vL.Path='..\'&'$(vL.Path_tmp)'; 
+LET vL.Path_tmp='$(vL.Path)'; $(Include=$(vL.Path)InitLink.qvs); 
+exit for when not '$(vG.BasePath)'= '' 
+next 
+SET vL.Path = ; 
+SET vL.Path_tmp = ; 
+ENDIF 
+$(Include=$(vG.SubPath)\4.GenericContainerLoader.qvs);
+
+
+// identifying if DF is used 
+if not '$(vG.BasePath)'= '' then
+// Loading System Variables
+$(Include=$(vG.BaseVariablePath)\3.SystemVariables.qvs);
+
+// Add path to GovernanceDashboard
+LET vProfilePath=left(DocumentPath(),index(DocumentPath(),DocumentName())-2);
+LET vQVGovHome=left('$(vProfilePath)',index('$(vProfilePath)','\profiles\default')-1);
+LET vFileRootPath1= left('$(vG.RootPath)',len( '$(vG.RootPath)' )-1); // Default File Root Path, Need to remove last back slash
+
+
+
+// Setting Variables so that they match DF Global System Variables
+// Change  DF Global System Variables with DF VariableEditor.qvw
+if not '$(vG.ServerLogPath)' = '' then
+LET vServer1LogPath='$(vG.ServerLogPath)'; 
+endif
+
+if not '$(vG.QVPRPath)' = '' then
+LET vServer1QVPRPath= '$(vG.QVPRPath)';
+endif
+
+
+if not '$(vG.QDSPath1)' = '' then
+Let vServer1QVPLogPath = '$(vG.QDSPath1)';
+endif
+
+// Check if ContainerMap.csv exists
+$(Include=$(vG.SubPath)\1.FileExist.qvs);
+call vL.FileExist ('$(vG.BaseVariablePath)\ContainerMap.csv');
+if not vL.FileExist = 'false' then
+
+// Loading Container Map to add for containers with alternative path (vL.RootPath) in GD
+// Loading Container Map csv table as vL.temp_table_map
+vL.temp_table_map:
+LOAD *
+FROM
+'$(vG.BaseVariablePath)\ContainerMap.csv'
+(txt, utf8, embedded labels, delimiter is ',', msq);
+
+// count(ContainerPathName) to find if more than one ContainerPathName is used
+Left join
+Load ContainerPathName,count(ContainerPathName) as ContainerPathNameCount
+Resident vL.temp_table_map 
+group by ContainerPathName; 
+
+// loop through CSV table entries
+let vL.xxx = NoOfRows('vL.temp_table_map');
+let vL.tmpLoopnr = 1;
+	for vL.ttt = 0 to vL.xxx-1
+	
+	LET vL.Comment =''; //reset comment entries 
+	
+	LET vL.ContainerPathName = PurgeChar(trim(peek(FieldName(1,'vL.temp_table_map'),$(vL.ttt),'vL.temp_table_map')),'=;,- '&chr(39)); // ContainerPathName variable field
+	LET vL.ContainerFolderName = lower(PurgeChar(trim(peek(FieldName(2,'vL.temp_table_map'),$(vL.ttt),'vL.temp_table_map')),'=;,'&chr(39))); // ContainerFolderName field
+	LET vL.Comment = PurgeChar(trim(peek(FieldName(3,'vL.temp_table_map'),$(vL.ttt),'vL.temp_table_map')),';,'&chr(39)); // Comment Field 
+	LET vL.RootPath = lower(PurgeChar(trim(peek(FieldName(4,'vL.temp_table_map'),$(vL.ttt),'vL.temp_table_map')),'=;,'&chr(39))); // RootPath other than default
+	LET vL.ContainerPathNameCount = peek(FieldName(5,'vL.temp_table_map'),$(vL.ttt),'vL.temp_table_map');
+	
+	// Do not do anything if alt root path is empty
+	if not '$(vL.RootPath)' = '' then
+	let vL.tmpLoopnr=$(vL.tmpLoopnr)+1;
+	// Correct \ if not exist 
+		if not right( '$(vL.ContainerFolderName)' , 1 ) ='\' then 
+			let vL.ContainerName ='$(vL.ContainerFolderName)'&'\';
+			else
+			let vL.ContainerName ='$(vL.ContainerFolderName)';
+		endif;
+		
+	
+
+			if not right('$(vL.RootPath)' , 1 ) ='\' then // Check and add '\' in root path
+				let vL.RootPath ='$(vL.RootPath)'&'\';
+			endif;
+		
+			LET vFileRootPath$(vL.tmpLoopnr)='$(vL.RootPath)$(vL.ContainerFolderName)' ;// add Container in GD
+		
+	
+		
+	endif;
+next vL.ttt;
+drop table 'vL.temp_table_map'; // Dropping CSV Table after variables been read into the QlikView application
+endif 
+
+for vL.tttt = 1 to vL.tmpLoopnr //Add Exclude rule for vQVGovHome and 0.Examples folder
+	if substringcount('$(vQVGovHome)', '$(vFileRootPath$(vL.tttt))') =1 then
+		LET vFileRootPath$(vL.tttt)Exclude= replace(replace('$(vQVGovHome)','-','%-'),'+','%+')&'|0.Administration\1.Application\0.Example'; // Exclude GD path and examples
+	endif
+next vL.tttt;
+//Resetting variables
+SET vL.ttt = ;
+SET vL.tttt = ;
+SET vL.xxx = ;
+SET vL.CVSTableName = ;
+SET vL.SpecificVariable = ;
+SET vL.GetRootPath = ;
+SET vL.Exit= ;
+SET vL.ContainerName= ;
+SET vL.ContainerPathNameCount= ;
+SET  vL.tmpLoopnr = ; 
+
+endif 
+

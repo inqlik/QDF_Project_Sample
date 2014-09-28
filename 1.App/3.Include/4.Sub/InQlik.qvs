@@ -1,0 +1,310 @@
+﻿SUB Calendar(_startDate, _endDate, _currentDate, _tableName)
+	LET _tableName = if(len('$(_tableName)')=0, 'Календарь','$(_tableName)');
+	$(_tableName):
+	LOAD *,If(_ПоследнийДеньПериода = Дата,1,0) AS _ФлагПоследнийДеньПериода;
+	LOAD *,If(Дата <= $(vU.CurrentDate),_ПоследнийДеньПериодаВрем) AS _ПоследнийДеньПериода;
+	LOAD *,Date(NumMin($(vU.CurrentDate),DayStart(WeekEnd(Дата)),DayStart(MonthEnd(Дата)))) AS _ПоследнийДеньПериодаВрем;
+	LOAD *,
+		//If(Год>2010, Год) as ПоследниеТриГода,
+		Autonumber(ГодМесяц,'ГодМесяц') as _МесяцПоПорядку,
+		Autonumber(ГодКвартал,'ГодКвартал') as _КварталПоПорядку,
+		Autonumber(ГодПолугодие,'ГодПолугодие') as _ПолугодиеПоПорядку,
+		Autonumber(Год,'Год') as _ГодПоПорядку,            	
+		Autonumber(Дата,'ДеньПоПорядку') as _ДеньПоПорядку,			
+		Autonumber(ГодНеделя,'ГодНеделя') as _НеделяПоПорядку,
+		Dual(_Неделя &'-' & ДеньНедели,_Неделя * 10 + ДеньНедели) as ДеньИНомерНедели,
+		If($(vU.CurrentDate)-Дата <= 30, 1 ) as _Последние30Дней,
+		If($(vU.CurrentDate)-Дата <= 60, 1 ) as _Последние60Дней,
+		If($(vU.CurrentDate)-Дата <= 90, 1 ) as _Последние90Дней;
+	LOAD 
+		Дата,
+		Year(Дата) as Год,
+		Month(Дата) as Месяц,
+		Text(Date(Дата,'MM')) as МесяцНомер,
+		Date(Monthstart(Дата), 'YYYY-MM') as ГодМесяц,
+		'К' & Ceil(Month(Дата)/3) as Квартал,
+		'П' & Ceil(Month(Дата)/6) as Полугодие,
+		Text(Year(Дата)) & '-П' & Ceil(Month(Дата)/6) as ГодПолугодие,
+		Dual(Year(Дата) & '-Кв' & Ceil(Month(Дата)/3), Year(Дата) & Ceil(Month(Дата)/3)) as ГодКвартал,
+		//weekname() as ГодНеделя,
+		Text(Year(Дата) & '/'& Floor((WeekStart(Дата)-YearStart(Дата)) / 7 + 2)) as ГодНеделя,
+		Floor((WeekStart(Дата)-YearStart(Дата)) / 7 + 2) as _Неделя,
+		//Floor((WeekStart(Дата)-YearStart(Дата)) / 7 + 1) as _НеделяOLD,
+		//week(Дата) as _Неделя,
+		Day(Дата) as День,
+		WeekDay(Дата) as ДеньНедели,
+		//DayNumberOfYear(Дата)-DayNumberOfYear(QuarterStart(Дата)) + 1 as _ДеньКвартала,		
+		Day(MonthEnd(Дата)) as _ДнейВМесяце,
+		If(NumMin($(_endDate),Num(DayStart(WeekEnd(Дата))))=Дата, 1, 0) as _КонецНедели,
+		If(NumMin($(_endDate),Num(DayStart(MonthEnd(Дата))))=Дата, 1, 0) as _КонецМесяца,
+		Dual('Current',1) as ТипПериода
+		;                                                                                       	
+	LOAD Num($(_startDate) + IterNo()-1) as Дата
+		AUTOGENERATE 1
+	//WHILE $(_startDate) + IterNo() <= $(_endDate)+1;
+	WHILE $(_startDate) + IterNo() <= MonthEnd($(_endDate))+1;
+	
+	DROP FIELD _ПоследнийДеньПериодаВрем;
+	DaysCount:
+	LOAD _ПоследнийДеньПериода, 
+		Count(_ПоследнийДеньПериода) as _ДнейПрошлогоПериода
+			RESIDENT $(_tableName)
+				GROUP BY _ПоследнийДеньПериода;
+	LEFT JOIN ($(_tableName))
+	LOAD * RESIDENT DaysCount;
+	DROP TABLE DaysCount;
+
+	LEFT JOIN ($(_tableName))
+	LOAD Max(_МесяцПоПорядку) as МаксМесяцПоПорядку,
+	     Max(_КварталПоПорядку) as МаксКварталПоПорядку,
+	 	 Max(_ПолугодиеПоПорядку) as МаксПолугодиеПоПорядку,
+	 	 Max(_ГодПоПорядку) as МаксГодПоПорядку,
+	 	 Max(_НеделяПоПорядку) as МаксНеделяПоПорядку
+	 		RESIDENT $(_tableName)
+	 			WHERE Дата <= $(_currentDate);
+
+	LEFT JOIN ($(_tableName))
+	LOAD 
+		Дата,
+		If(Дата <= $(vU.CurrentDate), 1) as _ФлагДействующаяДата,
+		1 as _ФлагУникальнаяДата,
+		If(МаксМесяцПоПорядку = _МесяцПоПорядку, day($(vU.CurrentDate))/_ДнейВМесяце,
+		  If(МаксМесяцПоПорядку > _МесяцПоПорядку,1,0)) as _МесяцПрогнозныйКоеффициент,
+		If(МаксМесяцПоПорядку = _МесяцПоПорядку, day($(vU.CurrentDate)),_ДнейВМесяце) as _ДнейПрошлогоПериодаВМесяце,
+		If(МаксМесяцПоПорядку = _МесяцПоПорядку,1,0) as _ФлагМесяцТекущий,
+		If(МаксМесяцПоПорядку - 1 = _МесяцПоПорядку ,1,0) as _ФлагМесяцПредыдущий,
+		If(МаксНеделяПоПорядку = _НеделяПоПорядку,1,0) as _ФлагНеделяТекущий,
+		If(МаксНеделяПоПорядку - 1 = _НеделяПоПорядку,1,0) as _ФлагНеделяПредыдущий,
+		If(МаксКварталПоПорядку = _КварталПоПорядку,1,0) as _ФлагКварталТекущий,
+		If(МаксКварталПоПорядку - 1 = _КварталПоПорядку,1,0) as _ФлагКварталПредыдущий,
+		If(МаксГодПоПорядку = _ГодПоПорядку,1,0) as _ФлагГодТекущий,
+		If(МаксГодПоПорядку - 1 = _ГодПоПорядку,1,0) as _ФлагГодПредыдущий,
+		If(МаксПолугодиеПоПорядку = _ПолугодиеПоПорядку,1,0) as _ФлагПолугодиеТекущий,
+		If(МаксПолугодиеПоПорядку - 1 = _ПолугодиеПоПорядку,1,0) as _ФлагПолугодиеПредыдущий
+		RESIDENT $(_tableName);
+			
+	DROP FIELDS МаксМесяцПоПорядку,МаксКварталПоПорядку,МаксПолугодиеПоПорядку,МаксГодПоПорядку,МаксНеделяПоПорядку;
+	DROP FIELDS _КварталПоПорядку, _ПолугодиеПоПорядку, _ГодПоПорядку, _НеделяПоПорядку;			
+
+	SET _tableName = ;
+ENDSUB
+
+SUB PopulateVariables (_vartable)
+
+	LET _varname_field = FieldName(1,'$(_vartable)');	// Get variable name
+	LET _varvalue_field = FieldName(2,'$(_vartable)');
+
+	FOR _i = 0 to NoOfRows('$(_vartable)')-1;
+		// Get the varname for this row
+		LET _varname = peek('$(_varname_field)',$(_i),'$(_vartable)');
+		// Get the value for this row
+		IF NOT IsNull(_varname)	THEN
+		// Set the variable value
+			LET _varvalue = Replace(peek('$(_varvalue_field)',$(_i),'$(_vartable)'),'$','~~~')	;
+			SET $(_varname)=$(_varvalue);
+			LET $(_varname)=Replace($(_varname),'~~~','$');
+		END IF;		
+	NEXT _i;	
+
+	SET _i=;
+	SET _varname_field=;
+	SET _varvalue_field=;
+	SET _varname=;
+	SET _varvalue=;
+END SUB
+
+SUB InQlik.GetFieldValues (_retvar, _field, _vTable)
+	/**
+	@version $Id: Qvc_Utility.qvs 207 2012-06-13 04:42:03Z rob@robwunderlich.com $
+	Get min & max values for a Field. The values are set in compound variables names using parameter 1 as the prefix. For example, if parameter 1 is 'vStat', the set variables will be:
+
+		vStat.Min  =  the Min value of the field.
+		vStat.Max  =  the Max value of the field.
+	    
+	@syntax CALL Qvc.GetFieldValues('vStats', 'LastUpdate', _'Transactions.qvd');
+
+	@param 1 String. Variable stem name in which to return values. Variables created will stem.Max, stem.Min.
+	@param 2 String. The field name.
+	@param 3 String, Optional. Source that contains the field. If Source ends with '.qvd', source is assumed to be a QVD. If not, Source is a RESIDENT table. If omitted, all values of field are the source.
+	*/
+	UNQUALIFY "_qvctemp.*";	// UNQUALIFY all qvctemp fields
+
+	IF len('$(_vTable)')=0 THEN
+		SET _vSource = ";LOAD FieldValue('$(_field)', recno()) as _$(_field) AUTOGENERATE FieldValueCount('$(_field)')";
+	ELSEIF index('$(_vTable)', '.') = 0 THEN
+		SET _vSource = 'RESIDENT $(_vTable)';
+	ELSEIF '.qvd' = lower(right('$(_vTable)', 4)) THEN
+		SET _vSource = 'FROM $(_vTable) (qvd)';
+	ELSE 
+		SET _vSource = 'FROM $(_vTable)';	// Assume text file
+	ENDIF
+
+	_qvctemp.temptab:
+	LOAD 
+		// +0 is to fix a bug in V10 where max is getting truncated to 9 digits precision.
+		max(_$(_field))+0 as _qvctemp.maxval,
+		min(_$(_field))+0 as _qvctemp.minval	
+	$(_vSource); //#!SUPPRESS_ERROR
+	// Replace of European DecimalSep ',' is required to assure returned value is proper decimal number, not formatted string
+	LET $(_retvar).Max = replace(peek('_qvctemp.maxval'), ',', '.');
+	LET $(_retvar).Min = replace(peek('_qvctemp.minval'), ',', '.');
+	DROP table _qvctemp.temptab;
+
+	SET _vSource=;
+ENDSUB
+
+SUB InQlik.GetFieldValuesFromTable (_retvar, _field, _vTable)
+	/**
+	@version $Id: Qvc_Utility.qvs 207 2012-06-13 04:42:03Z rob@robwunderlich.com $
+	Get min & max values for a Field. The values are set in compound variables names using parameter 1 as the prefix. For example, if parameter 1 is 'vStat', the set variables will be:
+
+		vStat.Min  =  the Min value of the field.
+		vStat.Max  =  the Max value of the field.
+	    
+	@syntax CALL Qvc.GetFieldValues('vStats', 'LastUpdate', _'Transactions.qvd');
+
+	@param 1 String. Variable stem name in which to return values. Variables created will stem.Max, stem.Min.
+	@param 2 String. The field name.
+	@param 3 String, Optional. Source that contains the field. If Source ends with '.qvd', source is assumed to be a QVD. If not, Source is a RESIDENT table. If omitted, all values of field are the source.
+	*/
+	UNQUALIFY "_qvctemp.*";	// UNQUALIFY all qvctemp fields
+
+	IF len('$(_vTable)')=0 THEN
+		Exit script ("Не указана таблица в параметрах функции!");
+	ELSEIF index('$(_vTable)', '.') = 0 THEN
+		SET _vSource = 'RESIDENT $(_vTable)';
+	ELSEIF '.qvd' = lower(right('$(_vTable)', 4)) THEN
+		SET _vSource = 'FROM $(_vTable) (qvd)';
+	ELSE 
+		SET _vSource = 'FROM $(_vTable)';	// Assume text file
+	ENDIF
+
+	_qvctemp.temptab:
+	LOAD 
+		// +0 is to fix a bug in V10 where max is getting truncated to 9 digits precision.
+		max($(_field))+0 as _qvctemp.maxval,
+		min($(_field))+0 as _qvctemp.minval	
+	$(_vSource);
+	// Replace of European DecimalSep ',' is required to assure returned value is proper decimal number, not formatted string
+	LET $(_retvar).Max = replace(peek('_qvctemp.maxval'), ',', '.');
+	LET $(_retvar).Min = replace(peek('_qvctemp.minval'), ',', '.');
+	DROP table _qvctemp.temptab;
+
+	SET _vSource=;
+ENDSUB
+
+SUB InQlik.JoinGenericTables (_targetTable, _genericTables)
+	/**
+	@version $Id: Qvc_JoinGenericTables.qvs 186 2012-04-07 23:36:07Z rob@robwunderlich.com $
+	Join Generic loaded output tables to a target table. 
+
+	@param 1 String. Table to be joined to. This is usually the table that was the source of the Generic load.
+	@param 2 String. The table name prefix for the generic output tables. This is the tablename label assigned in the Generic load.
+
+	@syntax CALL Qvc.JoinGeneric('TargetTable', 'GenericTablesPrefix'); 
+	*/
+	UNQUALIFY "_qvctemp.*";	// UNQUALIFY all qvctemp fields
+
+	//  Do a JOIN & DROP loop to consolidate generated generic tables
+	FOR _qvctemp.i = 0 to NoOfTables()
+		_qvctemp.temptable:
+		LOAD TableName($(_qvctemp.i)) as _qvctemp.Tablename AUTOGENERATE 1
+		WHERE WildMatch(TableName($(_qvctemp.i)), '$(_genericTables).*');
+	NEXT _qvctemp.i
+
+	FOR _qvctemp.i = 1 to FieldValueCount('_qvctemp.Tablename')
+		LET _qvctemp.vTable = FieldValue('_qvctemp.Tablename', $(_qvctemp.i));
+		LEFT JOIN (_$(_targetTable)) LOAD * RESIDENT _$(_qvctemp.vTable);
+		DROP TABLE _$(_qvctemp.vTable);
+	NEXT _qvctemp.i
+
+	DROP TABLE _qvctemp.temptable;
+
+	SET _qvctemp.i=;
+	SET _qvctemp.vTable=;
+ENDSUB
+
+Sub StoreAndDrop(vTableName, vQvdFileName, vSkipDrop)
+
+  Trace Store and Drop $(vTableName);
+  //CALL LogTableInfo('$(vTableName)', '$(vQvdFileName)');
+ 
+  // Store the table to QVD
+ Trace Storing [$(vTableName)] to [$(vQvdFileName)];
+ Store [$(vTableName)] into [$(vQvdFileName)] (QVD);
+ 
+ SLEEP 500;
+ if alt(vSkipDrop,0) = 0 then
+  // Drop it
+ 	Trace Dropping Table [$(vTableName)];
+ 	Drop Table [$(vTableName)];
+ end if
+EndSub
+
+Sub LogTableInfo(vTableName, vQvdFileName)
+
+  Let vTotalTablesLoaded=$(vTotalTablesLoaded) + 1;
+  Let vLoadEndTime=Now();
+ 
+
+  TablesLoaded: // replace with join(TablesLoaded) after first table
+  LOAD
+  	 DocumentName() as DocumentName,
+  	 '$(vScriptStartTime)' as ScriptStartTime,	
+     '$(vQvdFileName)' as QvdFileName,
+     NoOfRows('$(vTableName)') as NoOfRecords,
+     '$(vTableName)' as TableName,
+     '$(vLoadStartTime)' as LoadStartTime,
+     '$(vLoadEndTime)' as LoadEndTime,
+     Time(TimeStamp#('$(vLoadEndTime)')-TimeStamp#('$(vLoadStartTime)')) as LoadTime
+  AutoGenerate (1);
+  LET logFile = SubField(DocumentName(),'.',1) &'_' & '$(vScriptStartTime)';
+	STORE TablesLoaded INTO [../Data/EtlLogs/$(logFile).txt] (txt);
+  Let vLoadStartTime=now();
+EndSub
+
+SUB Inqlik.DropAllTables (DropAllTables.exceptThis)
+	FOR DropAllTables.i = 0 to NoOfTables()-1
+		LET tableName = TableName(DropAllTables.i);
+		IF tableName <> 'TablesLoaded' AND tableName <> 'TablesToDrop' AND tableName <> '$(DropAllTables.exceptThis)' THEN
+			TablesToDrop:
+			LOAD '$(tableName)' as tableName
+				AUTOGENERATE(1);
+		END IF
+	NEXT DropAllTables.i
+	FOR DropAllTables.i1 = 0 to Alt(NoOfRows('TablesToDrop'),0)-1
+		LET tableName = peek('tableName',$(DropAllTables.i1),'TablesToDrop');
+		if '$(tableName)' <> '' then
+  		DROP TABLE [$(tableName)];
+  	end if
+  NEXT DropAllTables.i1
+  IF len(NoOfRows('TablesToDrop'))>0 THEN
+  	DROP TABLE TablesToDrop;
+  END IF
+ENDSUB
+
+SUB TraceTables
+	FOR TraceTables.i = 0 to NoOfTables()-1
+		LET TraceTables.tableName = TableName(TraceTables.i);
+		LET TraceTables.tableRows = NoOfRows('$(tableName)');
+		TRACE '$(TraceTables.tableName): $(TraceTables.tableRows)';
+	NEXT TraceTables.i
+ENDSUB
+
+SUB TraceExpression(TraceExpression.param, TraceExpression.description)
+	LET TraceExpression.displayString = '$(TraceExpression.param)';
+	LET TraceExpression.value = $(TraceExpression.displayString);
+  IF Len('$(TraceExpression.description)') > 0 THEN
+  	LET TraceExpression.description = '$(TraceExpression.description)' & ' >>> ';
+  ENDIF
+
+	TRACE $(TraceExpression.description) Expression: $(TraceExpression.displayString) value: $(TraceExpression.value);
+ENDSUB 
+
+/// Конец месяца даты, в текущем месяце текущая дата 
+/// Используем как  $(InQlik.EndOfMonth(Дата)) например
+SET InQlik.EndOfMonth = nummin(Num(DayStart(MonthEnd(MakeDate($1)))),$(vU.CurrentDate));
+
+/// Годмесяц в наглядно-числовом виде  
+/// Используем как  $(InQlik.YearMonthNum(Дата)). Результат - число типа 201405
+SET InQlik.YearMonthNum = Year($1) * 100 + Month($1);

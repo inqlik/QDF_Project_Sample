@@ -1,0 +1,11 @@
+﻿//#!..\..\1.Application\
+
+ SalesTrans:
+LOAD * FROM $(vG.SrcQVDPath)Orders.QVD(QVD);
+LEFT JOIN (SalesTrans)
+LOAD *,
+  UnitPrice * Quantity as Amount;
+LOAD * FROM $(vG.SrcQVDPath)OrderDetails.QVD(QVD);
+DROP FIELD UnitPrice;
+
+STORE SalesTrans INTO $(vG.QVDPath)SalesTrans.QVD(QVD);

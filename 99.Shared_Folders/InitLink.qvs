@@ -1,0 +1,12 @@
+//  ____________________________________________________________________________________
+// |      Deployment Framework InitLink.qvs    
+// | InitLink.qvs is the container identifyer for 4.GenericContainerLoader.qvs                                        
+// | InitLink links the 1.application folders together         
+// | With the use of InitLink the qvw script only need to have    
+// | $(Include=InitLink.qvs) to reach 1.init.qvs. 
+// |      No relative path is needed when using InitLink!          
+// |____________________________________________________________________________________
+// Writing information in log
+trace '### DF InitLink Started, trying to connect to 1.Init.qvs script';
+
+$(Include=$(vL.Path)3.Include\1.BaseVariable\1.Init.qvs);

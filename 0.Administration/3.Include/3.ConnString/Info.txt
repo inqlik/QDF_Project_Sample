@@ -1,0 +1,9 @@
+//  ____________________________________________________________
+// |      Deployment Framework Path Info txt                   |
+// | Contains information folder purpose and base variable     |
+// |  All path are based on vG.BasePath                        |
+// |___________________________________________________________|
+
+// vG.ConnStringPath points to 3.Include\3.ConnString 
+
+Where connection strings should be stored = $(vG.ConnStringPath)

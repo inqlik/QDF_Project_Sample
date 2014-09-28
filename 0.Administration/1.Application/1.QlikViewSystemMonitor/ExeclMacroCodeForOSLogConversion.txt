@@ -1,0 +1,32 @@
+Sub WindowsLogConverter()
+'
+' WindowsLogConverter Macro
+'
+
+'
+    Columns("C:C").Select
+    Selection.Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+    Columns("C:C").Select
+    Selection.Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+    Range("H1").Select
+    ActiveCell.FormulaR1C1 = "Message"
+    Range("D1").Select
+    ActiveCell.FormulaR1C1 = "Date and Time"
+    Range("C2").Select
+    ActiveCell.FormulaR1C1 = "=TEXT(RC[-1], ""mm-dd-yyyy hh:mm:ss"")"
+    Range("C2").Select
+    Selection.AutoFill Destination:=Range("C2:C200025"), Type:=xlFillDefault
+    Range("C2:C200025").Select
+    Range("C200025").Select
+    Range(Selection, Selection.End(xlUp)).Select
+    Selection.Copy
+    Range("D2").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    ActiveWindow.SmallScroll Down:=-1
+    Columns("B:C").Select
+    Range("C1").Activate
+    Application.CutCopyMode = False
+    Selection.Delete Shift:=xlToLeft
+    Range("A1").Select
+End Sub

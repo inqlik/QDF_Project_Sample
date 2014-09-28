@@ -1,0 +1,10 @@
+//  ____________________________________________________________
+// |      Deployment Framework Path Info txt                   |
+// | Contains information folder purpose and base variable     |
+// |  All path are based on vG.BasePath                        |
+// |___________________________________________________________|
+
+// vG.BasePath is base path for this container
+// vG.ImportPath Folder is used to store data imports from external systems 
+
+Global Base Search Path Variable = $(vG.ImportPath)

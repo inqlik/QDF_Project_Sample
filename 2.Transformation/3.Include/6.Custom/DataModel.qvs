@@ -1,0 +1,8 @@
+﻿//#!..\..\1.Application\
+
+$(Include=$(vG.SubPath)\9.QVDMigration.qvs);
+
+//#!SKIP_PARSING
+CALL QVDMigration('$(vG.SrcQVDPath)Customers.qvd','$(vG.AppQVDPath)Customers.qvd');
+CALL QVDMigration('$(vG.SrcQVDPath)Products.qvd','$(vG.AppQVDPath)Products.qvd');
+CALL QVDMigration('$(vG.QVDPath)SalesTrans.qvd','$(vG.AppQVDPath)SalesTrans.qvd');

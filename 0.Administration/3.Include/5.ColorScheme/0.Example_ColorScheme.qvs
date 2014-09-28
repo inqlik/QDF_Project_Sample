@@ -1,0 +1,22 @@
+// Example of external color scheme used in QlikView as Variables
+
+SET vG.ChartColor1 = RGB(255,153,0);
+SET vG.ChartColor2 = RGB(255,102,0);
+SET vG.ChartColor3 = RGB(255,204,0);
+SET vG.ChartColor4 = RGB(115,115,115);
+SET vG.ChartColor5 = RGB(102,204,102);
+SET vG.ChartColor6 = RGB(10,110,180);
+SET vG.ChartColor7 = RGB(210,210,210);
+SET vG.ChartColor8 = RGB(153,51,153);
+SET vG.ChartColor9 = RGB(102,204,204);
+SET vG.ChartColor10 = RGB(108,168,210);
+
+SET vG.TrafficGreen = RGB(102,204,102);
+SET vG.TrafficYellow = RGB(255,204,0);
+SET vG.TrafficRed = RGB(255,102,0);
+
+SET vG.HelpColor = RGB(234,94,13);
+SET vG.GuideColor = RGB(248,171,124);
+
+SET vG.MenuLight = RGB(102,204,204);
+SET vG.MenuDark = RGB(51,102,102);

@@ -1,0 +1,12 @@
+BINARY ..\4.Mart\DataMart.qvw;
+
+  let vG.BasePath=; 
+  // Basic search for 1.Init.qvs
+  $(Include=..\..\..\..\3.include\1.basevariable\1.init.qvs);
+  $(Include=..\..\..\3.include\1.basevariable\1.init.qvs);
+  $(Include=..\..\3.include\1.basevariable\1.init.qvs);
+  $(Include=..\3.include\1.basevariable\1.init.qvs);
+  Exit script when '$(vG.BasePath)'= '';
+
+
+$(must_include=$(vG.CustomPath)LoadApp.qvs);

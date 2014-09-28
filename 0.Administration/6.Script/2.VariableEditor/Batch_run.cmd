@@ -1,0 +1,1 @@
+"%programfiles%\QlikView\Qv.exe" /r /vvL.RunBatchMode=YES "%~dp0%\VariableEditor.qvw"

@@ -1,0 +1,31 @@
+﻿//  ____________________________________________________________
+// |      Deployment Framework BaseVariable 4.Custom.qvs       |
+// |  This Include contains Custom path like QVD Sub folders   |
+// |  If possible path should be based on Variables created     |
+// |  by the framework like $(vG.QVDPath) and $(vG.BasePath)   |
+// |___________________________________________________________|
+
+// Used to add custom Global Variables (vG.)
+// Recommendation is to use Deployment Framework Global Variable Editor (VariableEditor.qvw) instead of this file
+
+
+
+// Writing information in log
+trace '### DF 4.Custom.qvs Started';
+
+// 99.LoadAll.qvs is loaded up last, this will pre-load all QDF functions, for easy access
+$(Include=$(vG.SubPath)\99.LoadAll.qvs); 
+
+// Example Path to Northwind QVD's
+// LET vG.NorthwindQVDPath='$(vG.QVDPath)0.Example_Northwind\';
+
+// Path to MetaData QVD files for 
+// LET vG.MetaDataQVDPath='$(vG.QVDPath)1.MetaData\';
+// LET vG.QvdName =TextBetween(Replace('$(vG.BasePath)','$(vG.RootPath)',''),'.','\') & _ & Left(DocumentName(),len(DocumentName())-4);
+// TextBetween(Replace('$(vG.BasePath)','$(vG.RootPath)',''),'.','\') & Left(DocumentName(),len(DocumentName())-4))
+
+// Uncomment this line to load in all sub functions during initiation
+// $(Must_Include=$(vG.SubPath)\99.LoadAll.qvs) 
+
+// Writing information in log
+trace '### DF 4.Custom.qvs Finished';

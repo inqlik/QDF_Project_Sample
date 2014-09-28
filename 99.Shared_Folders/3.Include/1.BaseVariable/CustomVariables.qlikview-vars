@@ -1,0 +1,11 @@
+#SECTION :Универсальные переменные
+---
+let: vU.CurrentDate
+definition: Num(MakeDate(2014,9,15))
+description: Последняя дата по которой имеются фактические данные.  
+---
+let: vU.StartDate 
+definition: Num(MakeDate(2013,1))
+---
+let: vU.EndDate 
+definition: Num(DayStart(MonthEnd(vU.CurrentDate)))

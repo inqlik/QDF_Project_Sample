@@ -1,0 +1,13 @@
+*.qvw
+*.qvd
+!2.qvd/
+*.qvw.log
+~*.*
+*.zip
+*.7z
+*.tmp
+*.mdb
+*.ldb
+*.qvw.meta
+*.qvw.shared
+generated_environment_descriptor.qvs

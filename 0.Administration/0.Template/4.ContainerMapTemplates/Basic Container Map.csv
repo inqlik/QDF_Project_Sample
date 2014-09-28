@@ -1,0 +1,6 @@
+ContainerPathName,ContainerFolderName,ContainerComments,RootPath
+Admin,0.Administration,Default Administration Container,
+Shared,99.Shared_folders,Default Shared Container,
+AStore,2.AcmeStore,AcmeStore Container,
+ASales,3.AcmeSales,AcmeSales Container,
+Example,1.Example,Container containing Examples,
