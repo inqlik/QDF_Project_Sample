@@ -89,10 +89,6 @@ Function createProject(userName)
 End Function
 Dim content
 content = createProjectContent()
-'WScript.Echo content
-createProject "vts"
-createProject "gla"
-createProject "osk"
-createProject "apn"
 
-'WScript.Echo res
+createProject "default"
+
